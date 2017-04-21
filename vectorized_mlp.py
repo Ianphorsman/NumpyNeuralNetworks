@@ -6,7 +6,7 @@ import _pickle as pickle
 
 class NeuralNetwork(object):
 
-    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=10000, learning_rate=0.000002, input_nodes=3, hidden_nodes=3, output_nodes=1):
+    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=3000, learning_rate=0.00002, input_nodes=3, hidden_nodes=3, output_nodes=1):
         # initialize training data
         self.X = X
         self.y = y
@@ -43,7 +43,7 @@ class NeuralNetwork(object):
                 self.feedforward(x)
                 error += self.vbackpropagate(y)
             if i % self.inspect_rate == 0:
-                print(error)
+                print(error, i)
 
 
     def test(self, x):
@@ -71,13 +71,15 @@ class NeuralNetwork(object):
         output_deltas = self.d_sigmoid(self.activation_output) * -(y - self.activation_output)
         hidden_deltas = self.d_sigmoid(self.activation_hidden) * np.dot(output_deltas, self.ho_weights.T)
 
-        change = output_deltas * self.activation_hidden
-        self.ho_weights -= self.learning_rate * change + self.ho_deltas
-        self.ho_deltas = change
+        change = np.multiply(output_deltas, self.activation_hidden)
+        update = self.learning_rate * change + self.ho_deltas.T
+        self.ho_weights -= update.T
+        self.ho_deltas = self.activation_hidden.reshape(3,1) * output_deltas
 
-        change = hidden_deltas * self.activation_input
-        self.ih_weights -= self.learning_rate * change + self.ih_deltas
-        self.ih_deltas = change
+        change = np.multiply(hidden_deltas, self.activation_input)
+        update = self.learning_rate * change + self.ih_deltas.T
+        self.ih_weights -= update.T
+        self.ih_deltas = self.activation_input.reshape(3,1)*hidden_deltas
 
         error = 0.5 * ((y - self.activation_output)**2)
         return error
@@ -91,6 +93,7 @@ class NeuralNetwork(object):
             for j in range(self.output_nodes):
                 error += output_deltas[j] * self.ho_weights[i][j]
             hidden_deltas[i] = self.d_sigmoid(self.activation_hidden[i]) * error
+
 
         for i in range(self.hidden_nodes):
             for j in range(self.output_nodes):

@@ -6,7 +6,7 @@ import _pickle as pickle
 
 class NeuralNetwork(object):
 
-    def __init__(self, X, y, iterations=50000, learning_rate=0.000002, input_nodes=3, hidden_nodes=3, output_nodes=1):
+    def __init__(self, X, y, iterations=50000, learning_rate=0.000001, input_nodes=3, hidden_nodes=3, output_nodes=1):
         self.X = X
         self.y = y
         self.iterations = iterations
