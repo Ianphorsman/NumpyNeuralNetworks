@@ -71,10 +71,10 @@ class NeuralNetwork(object):
         output_deltas = self.d_sigmoid(self.activation_output) * -(y - self.activation_output)
         hidden_deltas = self.d_sigmoid(self.activation_hidden) * np.dot(output_deltas, self.ho_weights.T)
 
-        change = np.multiply(output_deltas, self.activation_hidden)
-        update = self.learning_rate * change + self.ho_deltas.T
-        self.ho_weights -= update.T
-        self.ho_deltas = self.activation_hidden.reshape(3,1) * output_deltas
+        change = np.multiply(output_deltas, self.activation_hidden).reshape(3,1)
+        update = self.learning_rate * change + self.ho_deltas
+        self.ho_weights -= update
+        self.ho_deltas = change
 
         change = np.multiply(hidden_deltas, self.activation_input)
         update = self.learning_rate * change + self.ih_deltas.T
