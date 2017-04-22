@@ -6,7 +6,7 @@ import _pickle as pickle
 
 class NeuralNetwork(object):
 
-    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=3000, learning_rate=0.00002, input_nodes=3, hidden_nodes=3, output_nodes=1):
+    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=10000, learning_rate=0.000025, input_nodes=3, hidden_nodes=3, output_nodes=1):
         # initialize training data
         self.X = X
         self.y = y
@@ -147,7 +147,7 @@ class NeuralNetwork(object):
         return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
 
-X, y = make_moons(300, noise=0.2, random_state=314)
+X, y = make_moons(1000, noise=0.2, random_state=314)
 X = np.column_stack((X, np.ones(X.shape[0])))
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=314)
