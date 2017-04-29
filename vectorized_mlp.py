@@ -84,32 +84,6 @@ class NeuralNetwork(object):
         error = 0.5 * ((y - self.activation_output)**2)
         return error
 
-    def backpropagate(self, y):
-        output_deltas = self.d_sigmoid(self.activation_output) * -(y - self.activation_output)
-
-        hidden_deltas = np.zeros(self.hidden_nodes)
-        for i in range(self.hidden_nodes):
-            error = 0.0
-            for j in range(self.output_nodes):
-                error += output_deltas[j] * self.ho_weights[i][j]
-            hidden_deltas[i] = self.d_sigmoid(self.activation_hidden[i]) * error
-
-
-        for i in range(self.hidden_nodes):
-            for j in range(self.output_nodes):
-                change = output_deltas[j] * self.activation_hidden[i]
-                self.ho_weights[i][j] -= self.learning_rate * change + self.ho_deltas[i][j]
-                self.ho_deltas[i][j] = change
-
-        for i in range(self.input_nodes):
-            for j in range(self.hidden_nodes):
-                change = hidden_deltas[j] * self.activation_input[i]
-                self.ih_weights[i][j] -= self.learning_rate * change + self.ih_deltas[i][j]
-                self.ih_deltas[i][j] = change
-
-        error = 0.5 * ((y - self.activation_output)**2)
-        return error
-
     def sigmoid(self, X):
         return 1 / (1 + np.exp(-X))
 
