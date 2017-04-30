@@ -52,13 +52,10 @@ class NeuralNetwork(object):
 
     def test_accuracy(self, X, y):
         correct = 0.0
-        incorrect = 0.0
         for i in range(X.shape[0]):
             self.feedforward(X[i])
             if np.round(self.activation_output[0]) == y[i]:
                 correct += 1
-            else:
-                incorrect += 1
 
         return (correct / X.shape[0]) * 100
 
