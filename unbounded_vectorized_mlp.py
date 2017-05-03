@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_moons
 import _pickle as pickle
+from pprint import pprint as pp
 
 class NeuralNetwork(object):
 
@@ -28,14 +29,16 @@ class NeuralNetwork(object):
         self.layers = layers
 
         self.nodes = []
-
+        for l in layers:
+            self.nodes.append(np.ones(l))
 
         self.weights = []
         for i in range(len(layers)-1):
             self.weights.append(np.random.randn(layers[i][0], layers[i+1][0]))
 
         self.deltas = []
-
+        for i in range(len(layers)-1):
+            self.deltas.append(np.random.randn(layers[i][0], layers[i+1][0]))
 
 
 
@@ -64,10 +67,33 @@ class NeuralNetwork(object):
         return (correct / X.shape[0]) * 100
 
     def feedforward(self, x):
-        pass
+        self.nodes[0] = x
+        for i in range(len(self.nodes)-1):
+            self.nodes[i+1] = self.sigmoid(np.dot(self.nodes[i], self.weights[i]))
 
     def backpropagate(self, y):
-        pass
+        # calculate deltas
+        self.deltas[-1] = self.d_sigmoid(self.nodes[-1]) * -(y - self.nodes[-1])
+        print(self.deltas[-1])
+
+        for i in reversed(range(len(self.deltas)-1)):
+            self.deltas[i] = np.multiply(self.d_sigmoid())
+
+
+
+        for i in reversed(range(len(self.deltas)-1)):
+            self.deltas[i] = self.d_sigmoid(self.nodes[i-1]) * np.dot(self.deltas[i+1], self.weights[i+1].T)
+            print(self.deltas[i])
+        # update weights
+        for i in reversed(range(len(self.weights))):
+            change = np.multiply(self.deltas[i], self.nodes[i-1])
+            #print(self.deltas[-i].shape, self.nodes[-i-1].shape)
+            update = self.learning_rate * change + self.deltas[i]
+            self.weights[i] -= update
+            self.deltas[i] = change
+
+        error = 0.5 * ((y - self.nodes[-1])**2)
+        return error
 
     def sigmoid(self, X):
         return 1 / (1 + np.exp(-X))
@@ -75,11 +101,30 @@ class NeuralNetwork(object):
     def d_sigmoid(self, X):
         return X * (1 - X)
 
-    def inspect(self):
+    def inspect_shape(self):
         pass
 
-    def inspect_shape(self):
-        return self.layers
+    def inspect(self):
+        print("Intended Layers: ")
+        pp(self.layers)
+        print()
+        print()
+        print("Generated Nodes: ")
+        pp(self.nodes)
+        print()
+        print()
+        print("Weights: ")
+        pp(self.weights)
+        print()
+        print()
+        print("Deltas: ")
+        pp(self.deltas)
+
+    def save(self):
+        pickle.dump(self, open("{}.p".format(self.filename), 'wb'))
+
+    def load(self):
+        return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
 X, y = make_moons(1000, noise=0.2, random_state=314)
 X = np.column_stack((X, np.ones(X.shape[0])))
@@ -87,5 +132,7 @@ X = np.column_stack((X, np.ones(X.shape[0])))
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=314)
 
 nn = NeuralNetwork(X_train, y_train, filename="vectorized_neural_network")
-
-print(nn.inspect_shape())
+nn.train()
+nn.save()
+mn = nn.load()
+#nn.inspect()
