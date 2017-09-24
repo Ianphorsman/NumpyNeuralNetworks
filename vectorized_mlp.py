@@ -118,7 +118,7 @@ class NeuralNetwork(object):
         return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
     def inspect_all(self):
-        pass
+        print("Inspection...")
 
 
 X, y = make_moons(1000, noise=0.2, random_state=314)
