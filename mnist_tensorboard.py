@@ -84,7 +84,7 @@ with tf.Session() as sess:
 
     summary_writer = tf.summary.FileWriter('/tmp/mnist/2', graph=tf.get_default_graph())
 
-    for i in range(7000):
+    for i in range(10000):
         batch = mnist.train.next_batch(50)
 
         _, c, summary = sess.run(
@@ -92,7 +92,7 @@ with tf.Session() as sess:
             feed_dict={
                 x: batch[0],
                 y_: batch[1],
-                keep_prob: 0.4
+                keep_prob: 0.1
             }
         )
         if i % 250 == 0:

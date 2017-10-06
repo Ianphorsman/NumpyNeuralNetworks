@@ -6,7 +6,7 @@ import _pickle as pickle
 
 class NeuralNetwork(object):
 
-    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=1000, learning_rate=0.000025, input_nodes=3, hidden_nodes=3, output_nodes=1):
+    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=1000, learning_rate=0.000025, input_nodes=3, hidden_nodes=4, output_nodes=1):
         # initialize training data
         self.X = X
         self.y = y
@@ -65,21 +65,15 @@ class NeuralNetwork(object):
         self.activation_output = self.sigmoid(np.dot(self.activation_hidden, self.ho_weights))
 
     def vbackpropagate(self, y):
-        output_deltas = self.d_sigmoid(self.activation_output) * -(y - self.activation_output)
-        hidden_deltas = self.d_sigmoid(self.activation_hidden) * np.dot(output_deltas, self.ho_weights.T)
+        error = y - self.activation_output
+        output_deltas = error * self.d_sigmoid(self.activation_output)
+        hidden_deltas = np.dot(output_deltas, self.ho_weights.T) * self.d_sigmoid(self.activation_hidden)
+        self.ho_weights += np.dot(np.atleast_2d(self.activation_hidden).T, np.atleast_2d(output_deltas))
+        self.ih_weights += np.dot(np.atleast_2d(self.activation_input).T, np.atleast_2d(hidden_deltas))
 
-        change = np.multiply(output_deltas, self.activation_hidden).reshape(3,1)
-        update = self.learning_rate * change + self.ho_deltas
-        self.ho_weights -= update
-        self.ho_deltas = change
-
-        change = np.multiply(hidden_deltas, self.activation_input)
-        update = self.learning_rate * change + self.ih_deltas.T
-        self.ih_weights -= update.T
-        self.ih_deltas = self.activation_input.reshape(3,1)*hidden_deltas
-
-        error = 0.5 * ((y - self.activation_output)**2)
+        error = 0.5 * ((y - self.activation_output) ** 2)
         return error
+
 
     def sigmoid(self, X):
         return 1 / (1 + np.exp(-X))
