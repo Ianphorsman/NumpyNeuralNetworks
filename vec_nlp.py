@@ -111,7 +111,7 @@ class NeuralNetwork(object):
     def load(self):
         return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
-
+'''
 X, y = make_moons(1000, noise=0.2, random_state=314)
 X = np.column_stack((X, np.ones(X.shape[0])))
 
@@ -124,3 +124,4 @@ nn.save()
 mn = nn.load()
 
 print(mn.test_accuracy(X_test, y_test))
+'''
