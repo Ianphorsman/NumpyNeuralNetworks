@@ -1,17 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import make_moons
+from sklearn.datasets import make_moons, make_circles
 import _pickle as pickle
-
+import pdb
 class NeuralNetwork(object):
 
-    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=1000, learning_rate=0.000025, input_nodes=3, hidden_nodes=4, output_nodes=1):
+    def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=1000, learning_rate=0.000025, input_nodes=3, hidden_nodes=4, output_nodes=1, optional_features=[]):
         # initialize training data
         self.X = X
         self.y = y
         self.filename = filename
         self.inspect_rate = inspect_rate
+
         # initialize hyperparameters
         self.iterations = iterations
         self.learning_rate = learning_rate
@@ -22,13 +23,15 @@ class NeuralNetwork(object):
         self.output_nodes = np.int64(output_nodes)
 
         # initialize placeholder nodes
-        self.activation_input = np.ones(self.input_nodes)
-        self.activation_hidden = np.ones(self.hidden_nodes)
-        self.activation_output = np.ones(self.output_nodes)
+        self.activation_input = np.atleast_2d(np.ones(self.input_nodes))
+        self.activation_hidden = np.atleast_2d(np.ones(self.hidden_nodes))
+        self.activation_output = np.atleast_2d(np.ones(self.output_nodes))
+
+
 
         # initialize weights
-        self.ih_weights = np.random.randn(self.activation_input.shape[0], self.activation_hidden.shape[0])
-        self.ho_weights = np.random.randn(self.activation_hidden.shape[0], self.activation_output.shape[0])
+        self.ih_weights = np.random.randn(self.activation_input.shape[1] + 1, self.activation_hidden.shape[1])
+        self.ho_weights = np.random.randn(self.activation_hidden.shape[1] + 1, self.activation_output.shape[1])
 
         # initialize deltas
         self.ih_deltas = np.zeros((self.activation_input.shape[0], self.activation_hidden.shape[0]))
@@ -48,7 +51,7 @@ class NeuralNetwork(object):
 
     def test(self, x):
         self.feedforward(x)
-        print(self.activation_output)
+        return self.activation_output
 
     def test_accuracy(self, X, y):
         correct = 0.0
@@ -60,16 +63,17 @@ class NeuralNetwork(object):
         return (correct / X.shape[0]) * 100
 
     def feedforward(self, x):
-        self.activation_input = x
-        self.activation_hidden = self.sigmoid(np.dot(self.activation_input, self.ih_weights))
+        self.activation_input = np.append(1, x)
+        self.activation_hidden = np.append(1, self.sigmoid(np.dot(self.activation_input, self.ih_weights)))
         self.activation_output = self.sigmoid(np.dot(self.activation_hidden, self.ho_weights))
 
     def vbackpropagate(self, y):
-        error = y - self.activation_output
-        output_deltas = error * self.d_sigmoid(self.activation_output)
-        hidden_deltas = np.dot(output_deltas, self.ho_weights.T) * self.d_sigmoid(self.activation_hidden)
-        self.ho_weights += np.dot(np.atleast_2d(self.activation_hidden).T, np.atleast_2d(output_deltas))
-        self.ih_weights += np.dot(np.atleast_2d(self.activation_input).T, np.atleast_2d(hidden_deltas))
+        output_deltas = y - self.activation_output
+        #output_deltas = error * self.d_sigmoid(self.activation_output[1:])
+        hidden_deltas = np.dot(output_deltas, self.ho_weights[1:].T) * self.d_sigmoid(self.activation_hidden[1:])
+
+        self.ho_weights += self.learning_rate * np.dot(np.atleast_2d(self.activation_hidden).T, np.atleast_2d(output_deltas))
+        self.ih_weights += self.learning_rate * np.dot(np.atleast_2d(self.activation_input).T, np.atleast_2d(hidden_deltas))
 
         error = 0.5 * ((y - self.activation_output) ** 2)
         return error
@@ -102,8 +106,19 @@ class NeuralNetwork(object):
         print("Input to Hidden 1 weights: ", self.ih_weights.shape)
         print("Hidden 1 to Output weights: ", self.ho_weights.shape)
 
-    def visualize(self):
-        pass
+    def visualize_decision_boundary(self, x, y, c):
+        plt.figure(0)
+        xbg, ybg, cbg = [], [], []
+        x_min, x_max = np.min(x), np.max(x)
+        y_min, y_max = np.min(y), np.max(y)
+        for x_ in np.linspace(x_min - 0.1, x_max + 0.1, 300):
+            for y_ in np.linspace(y_min - 0.1, y_max + 0.1, 200):
+                xbg.append(x_)
+                ybg.append(y_)
+                cbg.append(np.round(self.test([x_, y_, x_ * y_])))
+        plt.scatter(xbg, ybg, cbg, cmap=plt.get_cmap('Blues'))
+        plt.scatter(x, y, c=c)
+        plt.show()
 
     def save(self):
         pickle.dump(self, open("{}.p".format(self.filename), 'wb'))
@@ -111,17 +126,27 @@ class NeuralNetwork(object):
     def load(self):
         return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
-'''
-X, y = make_moons(1000, noise=0.2, random_state=314)
-X = np.column_stack((X, np.ones(X.shape[0])))
-
+#from make_recurrent_moons import Moons
+#moons = Moons()
+#X, y = moons.recurrent(n_moons=5, degradation=1.05)
+X, y = make_moons(1000, noise=0.15, random_state=500)
+X = np.column_stack((X, np.multiply(X[:, 0], X[:, 1])))
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=314)
 
-nn = NeuralNetwork(X_train, y_train, filename="vectorized_neural_network")
+nn = NeuralNetwork(X_train, y_train, filename="vectorized_neural_network", learning_rate=0.005, iterations=2000)
 nn.train()
 nn.save()
 
-mn = nn.load()
+nn.visualize_decision_boundary(X_test[:, 0], X_test[:, 1], y_test)
 
-print(mn.test_accuracy(X_test, y_test))
-'''
+my_score = nn.test_accuracy(X_test, y_test)
+print(my_score)
+from sklearn.neural_network import MLPClassifier
+
+mlp = MLPClassifier(alpha=0.0025, random_state=1)
+mlp.fit(X_train, y_train)
+score = mlp.score(X_test, y_test)
+print(my_score, score*100)
+
+if my_score > (score*100):
+    print("You are awesome!")
