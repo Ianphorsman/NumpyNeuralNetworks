@@ -4,6 +4,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_moons, make_circles
 import _pickle as pickle
 import pdb
+
+
 class NeuralNetwork(object):
 
     def __init__(self, X, y, filename='neural_network', inspect_rate=50, iterations=1000, learning_rate=0.000025, input_nodes=3, hidden_nodes=4, output_nodes=1, optional_features=[]):
@@ -126,9 +128,7 @@ class NeuralNetwork(object):
     def load(self):
         return pickle.load(open("{}.p".format(self.filename), 'rb'))
 
-#from make_recurrent_moons import Moons
-#moons = Moons()
-#X, y = moons.recurrent(n_moons=5, degradation=1.05)
+
 X, y = make_moons(1000, noise=0.15, random_state=500)
 X = np.column_stack((X, np.multiply(X[:, 0], X[:, 1])))
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=314)
@@ -146,7 +146,7 @@ from sklearn.neural_network import MLPClassifier
 mlp = MLPClassifier(alpha=0.0025, random_state=1)
 mlp.fit(X_train, y_train)
 score = mlp.score(X_test, y_test)
-print(my_score, score*100)
+print(my_score, score * 100)
 
-if my_score > (score*100):
+if my_score > (score * 100):
     print("You are awesome!")
