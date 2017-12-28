@@ -21,7 +21,7 @@ class SGD(object):
         # inspect rate to print and store current error and accuracy
         self.inspect_rate = inspect_rate
 
-        # decide whether batching occurs
+        # decide whether batching occurs (not implemented yet)
         self.batch, self.batch_size = batch
 
         # number of iterations
