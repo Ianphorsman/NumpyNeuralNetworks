@@ -66,9 +66,12 @@ class SGD(object):
                 self.accuracies.append(accuracy)
                 print(self.inspect_performance(i, cost, accuracy))
 
-    def test_accuracy(self, X_test, y_test):
+    def test_accuracy(self, X_test, y_test, percent=True):
         hypothesis = self.feedforward(X_test)
-        return np.sum(np.round(hypothesis) == y_test.T) / X_test.shape[0] * 100
+        evaluation = np.int_(np.round(hypothesis) == y_test.T)
+        if not percent:
+            return evaluation
+        return np.sum(evaluation) / X_test.shape[0] * 100
 
     def add_bias(self, x):
         return np.hstack((np.ones((x.shape[0], 1)), x))
@@ -138,8 +141,18 @@ class SGD(object):
     def load(self):
         return picklerick.load(open("{}.p".format(self.filename), 'rb'))
 
-    def plot_decision_boundary(self):
-        pass
+    def plot_decision_boundary(self, x, y, c):
+        plt.figure(0)
+        x_min, x_max = np.min(x), np.max(x)
+        y_min, y_max = np.min(y), np.max(y)
+        x_1 = np.atleast_2d(np.repeat(np.linspace(x_min - 0.1, x_max + 0.1, 200), 100)).T
+        x_2 = np.atleast_2d(np.tile(np.linspace(y_min - 0.1, y_max + 0.1, 200), 100)).T
+        X_ = np.column_stack((x_1, x_2))
+        classifications = np.round(self.feedforward(X_))
+
+        plt.scatter(X_.T[0], X_.T[1], classifications.T[0], cmap=plt.get_cmap('Blues'))
+        plt.scatter(x, y, c=c, marker='.')
+        plt.show()
 
     def plot_performance(self, cost=True, accuracy=True):
         pass
@@ -151,9 +164,11 @@ class SGD(object):
 X, y = make_moons(1000, noise=0.15, random_state=333)
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-sgd = SGD(X_train, y_train, iterations=2000, learning_rate=0.01)
+sgd = SGD(X_train, y_train, iterations=500, learning_rate=0.01)
 
 sgd.train(sgd.X, sgd.y)
 
 print(sgd.test_accuracy(X_test, np.atleast_2d(y_test)))
+
+sgd.plot_decision_boundary(X_test[:, 0], X_test[:, 1], y_test)
 
