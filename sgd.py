@@ -40,14 +40,10 @@ class SGD(object):
         self.accuracies = []
 
         # initialize placeholder layers
-        self.layers = self.initialize_layers()
+        self.layers = []
 
         # initialize placeholder weights
         self.weights = self.initialize_weights()
-
-    def initialize_layers(self):
-        layers = []
-        return layers
 
     def initialize_weights(self):
         weights = []
@@ -109,9 +105,6 @@ class SGD(object):
 
         return deltas
 
-
-
-
     def activate(self, X, d=False):
         if self.activation_function == 'sigmoid':
             return self.sigmoid(X, d)
@@ -155,7 +148,16 @@ class SGD(object):
         plt.show()
 
     def plot_performance(self, cost=True, accuracy=True):
-        pass
+        plt.figure(1)
+        if cost:
+            x_cost = list(range(len(self.costs)))
+            y_cost = self.costs
+            plt.scatter(x_cost, y_cost, cmap=plt.get_cmap('Greens'))
+        if accuracy:
+            x_accuracy = list(range(len(self.accuracies)))
+            y_accuracy = self.accuracies
+            plt.scatter(x_accuracy, y_accuracy, cmap=plt.get_cmap('Blues'))
+        plt.show()
 
     def inspect_performance(self,iteration, cost, accuracy):
         return "Iteration: {} , Cost: {} , Accuracy: {}".format(iteration, cost, accuracy)
@@ -171,4 +173,5 @@ sgd.train(sgd.X, sgd.y)
 print(sgd.test_accuracy(X_test, np.atleast_2d(y_test)))
 
 sgd.plot_decision_boundary(X_test[:, 0], X_test[:, 1], y_test)
+sgd.plot_performance()
 
